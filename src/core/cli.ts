@@ -31,6 +31,8 @@ import { logger } from '../utils';
 import axios from 'axios';
 import path from 'path';
 import figlet from 'figlet';
+import https from 'https';
+import dotenv from 'dotenv';
 
 /**
  * CLI for Langsource to handle translation generation.
@@ -109,6 +111,22 @@ class LangsourceCLI {
   }
 
   /**
+   * Reloads the environment variables from the .env file located in the current working directory.
+   *
+   * @returns {boolean} - Returns `true` if the environment variables were successfully reloaded, otherwise `false`.
+   *
+   * Logs an error message if the environment variables could not be reloaded.
+   */
+  private reloadEnv(): boolean {
+    const result = dotenv.config({ path: path.join(process.cwd(), '.env') });
+    if (result.error) {
+      logger.error('Failed to reload environment variables.');
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Prompts the user to enter the LLM API key.
    * @returns {string} The LLM API key entered by the user.
    */
@@ -172,6 +190,42 @@ class LangsourceCLI {
     }
     fs.writeFileSync(envFilePath, `LANGSOURCE_API_KEY=${answers.key}`);
     logger.info('API Key Added.');
+
+    if (!this.reloadEnv()) {
+      logger.error('Failed to reload environment variables. Please retry.');
+      process.exit(1);
+    }
+  }
+
+  /**
+   * Checks if the client is connected to the internet by making a request to a specified host.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to `true` if the internet connection is available,
+   *                             otherwise resolves to `false`.
+   */
+  private async isClientConnected(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const options: https.RequestOptions = {
+        host: 'www.google.com', // Host to test connectivity
+        port: 443, // HTTPS port
+        timeout: 5000, // Timeout in milliseconds
+      };
+
+      const req = https.request(options, (_) => {
+        resolve(true); // Internet connection is available
+      });
+
+      req.on('error', (_) => {
+        resolve(false); // No internet connection
+      });
+
+      req.on('timeout', () => {
+        req.destroy(); // Destroy the request to free resources
+        resolve(false);
+      });
+
+      req.end(); // Send the request
+    });
   }
 
   /**
@@ -179,6 +233,12 @@ class LangsourceCLI {
    */
   public async start(): Promise<void> {
     try {
+      if (!(await this.isClientConnected())) {
+        logger.error(
+          'This package requires internet connection. Please check your internet connection.',
+        );
+        return;
+      }
       this.process
         .name('lang-source-cli')
         .version('1.0.4')
