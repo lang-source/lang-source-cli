@@ -223,7 +223,7 @@ class LangsourceCLI {
       try {
         this.process
           .name('lang-source-cli')
-          .version('1.0.0-beta')
+          .version('1.0.0')
           .description(
             'lang-source-cli is an AI-powered tool that simplifies multilingual support by automating i18n, designed to enhance efficiency in globalized development projects.',
           )
