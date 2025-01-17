@@ -7,7 +7,7 @@
 ### AI-Powered Internationalization Made Simple
 <sub>Transform your development process with automated, accurate translations for your applications</sub>
 
-[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](https://github.com/lang-source/lang-source-cli/blob/main/LICENCE)
 [![npm version](https://img.shields.io/npm/v/lang-source-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/lang-source-cli)
 [![npm downloads](https://img.shields.io/npm/dm/lang-source-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/lang-source-cli)
 
@@ -28,6 +28,8 @@ Install lang-source-cli globally with npm:
 
 ```bash
 npm install -g lang-source-cli
+# or
+sudo npm install -g lang-source-cli  # incase sudo privileges are required 
 ```
 
 ## 🛠️ Usage
