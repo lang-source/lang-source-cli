@@ -200,31 +200,28 @@ class LangsourceCLI {
   /**
    * Checks if the client is connected to the internet by making a request to a specified host.
    *
-   * @returns {Promise<boolean>} A promise that resolves to `true` if the internet connection is available,
-   *                             otherwise resolves to `false`.
+   * @returns {Promise<boolean>}
+   * A promise that resolves to `true` if the internet connection is available,
+   * otherwise resolves to `false`.
    */
   private async isClientConnected(): Promise<boolean> {
     return new Promise((resolve) => {
       const options: https.RequestOptions = {
-        host: 'www.google.com', // Host to test connectivity
-        port: 443, // HTTPS port
-        timeout: 5000, // Timeout in milliseconds
+        host: 'generativelanguage.googleapis.com',
+        port: 443,
+        timeout: 3000,
       };
-
       const req = https.request(options, (_) => {
-        resolve(true); // Internet connection is available
+        resolve(true);
       });
-
       req.on('error', (_) => {
-        resolve(false); // No internet connection
-      });
-
-      req.on('timeout', () => {
-        req.destroy(); // Destroy the request to free resources
         resolve(false);
       });
-
-      req.end(); // Send the request
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(false);
+      });
+      req.end();
     });
   }
 
@@ -234,10 +231,9 @@ class LangsourceCLI {
   public async start(): Promise<void> {
     try {
       if (!(await this.isClientConnected())) {
-        logger.error(
+        throw new Error(
           'This package requires internet connection. Please check your internet connection.',
         );
-        return;
       }
       this.process
         .name('lang-source-cli')

@@ -71,6 +71,8 @@ const utils_1 = require('../utils');
 const axios_1 = __importDefault(require('axios'));
 const path_1 = __importDefault(require('path'));
 const figlet_1 = __importDefault(require('figlet'));
+const https_1 = __importDefault(require('https'));
+const dotenv_1 = __importDefault(require('dotenv'));
 /**
  * CLI for Langsource to handle translation generation.
  *
@@ -148,6 +150,23 @@ class LangsourceCLI {
     });
   }
   /**
+   * Reloads the environment variables from the .env file located in the current working directory.
+   *
+   * @returns {boolean} - Returns `true` if the environment variables were successfully reloaded, otherwise `false`.
+   *
+   * Logs an error message if the environment variables could not be reloaded.
+   */
+  reloadEnv() {
+    const result = dotenv_1.default.config({
+      path: path_1.default.join(process.cwd(), '.env'),
+    });
+    if (result.error) {
+      utils_1.logger.error('Failed to reload environment variables.');
+      return false;
+    }
+    return true;
+  }
+  /**
    * Prompts the user to enter the LLM API key.
    * @returns {string} The LLM API key entered by the user.
    */
@@ -213,6 +232,41 @@ class LangsourceCLI {
         `LANGSOURCE_API_KEY=${answers.key}`,
       );
       utils_1.logger.info('API Key Added.');
+      if (!this.reloadEnv()) {
+        utils_1.logger.error(
+          'Failed to reload environment variables. Please retry.',
+        );
+        process.exit(1);
+      }
+    });
+  }
+  /**
+   * Checks if the client is connected to the internet by making a request to a specified host.
+   *
+   * @returns {Promise<boolean>}
+   * A promise that resolves to `true` if the internet connection is available,
+   * otherwise resolves to `false`.
+   */
+  isClientConnected() {
+    return __awaiter(this, void 0, void 0, function* () {
+      return new Promise((resolve) => {
+        const options = {
+          host: 'generativelanguage.googleapis.com',
+          port: 443,
+          timeout: 3000,
+        };
+        const req = https_1.default.request(options, (_) => {
+          resolve(true);
+        });
+        req.on('error', (_) => {
+          resolve(false);
+        });
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(false);
+        });
+        req.end();
+      });
     });
   }
   /**
@@ -221,6 +275,11 @@ class LangsourceCLI {
   start() {
     return __awaiter(this, void 0, void 0, function* () {
       try {
+        if (!(yield this.isClientConnected())) {
+          throw new Error(
+            'This package requires internet connection. Please check your internet connection.',
+          );
+        }
         this.process
           .name('lang-source-cli')
           .version('1.0.4')

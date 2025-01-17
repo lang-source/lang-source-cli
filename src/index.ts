@@ -39,11 +39,3 @@ async function main() {
 main().catch((err: Error) => {
   console.error(err.message);
 });
-
-function moduleExport() {
-  console.log(
-    'To use this module, install it globally using npm and run the command `langsource`',
-  );
-}
-
-export default moduleExport;

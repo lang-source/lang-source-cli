@@ -77,9 +77,3 @@ function main() {
 main().catch((err) => {
   console.error(err.message);
 });
-function moduleExport() {
-  console.log(
-    'To use this module, install it globally using npm and run the command `langsource`',
-  );
-}
-exports.default = moduleExport;
